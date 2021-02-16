@@ -7,6 +7,8 @@ For assistance:
 */
 let html = '';
 let itemsPerPage=9;
+let title = '';
+
 
 /*
 Create the `showPage` function
@@ -21,21 +23,23 @@ function showPage (list, page) {
   for (let i=0; i<=list.length; i++) {
     if (i>= startIndex && i<endIndex) {
       if (list[i].name.title === "Miss") {
-        let title = '${list[i].title}';
+        title = `${list[i].name.title}`;
+      } if (list[i].name.title === "Mr" || list[i].name.title === "Mrs") {
+        title = `${list[i].name.title}.`;
       } else {
-        let title = '${list[i].title}.';
+        title = '';
       }
-      html = 'help, ${list[i].name.first}.';
-      //   <li class="student-item cf">
-      //     <div class="student-details">
-      //     // <img class="avatar" src="${list[i].picture.thumbnail}" alt="Profile Picture">
-      //     <h3>${title} ${list[i].name.first} ${list[i].name.last}</h3>
-      //     <span class="email">${list[i].email}</span>
-      //   </div>
-      //   <div class="joined-details">
-      //     <span class="date">Joined ${list[i].registered.date}</span>
-      //   </div>
-      // </li>';
+      html = `
+        <li class="student-item cf">
+          <div class="student-details">
+            <img class="avatar" src="${list[i].picture.large ? `${list[i].picture.large}` : ''}" alt="Profile Picture">
+            <h3>${title} ${list[i].name.first ? `${list[i].name.first}` : ''} ${list[i].name.last ? `${list[i].name.last}` : ''}</h3>
+            <span class="email">${list[i].email ? `${list[i].email}` : ''}</span>
+          </div>
+          <div class="joined-details">
+            <span class="date">Joined ${list[i].registered.date ? `${list[i].registered.date}` : ''}</span>
+          </div>
+        </li>`;
     studentList.insertAdjacentHTML('beforeend',html);
   }
 }

@@ -1,35 +1,36 @@
 /*
 Treehouse Techdegree:
 FSJS Project 2 - Data Pagination and Filtering
-For assistance:
-   Check out the "Project Resources" section of the Instructions tab: https://teamtreehouse.com/projects/data-pagination-and-filtering#instructions
-   Reach out in your Slack community: https://treehouse-fsjs-102.slack.com/app_redirect?channel=unit-2
-*/
-let html = '';
-let itemsPerPage=9;
-let title = '';
-
-
-/*
-Create the `showPage` function
-This function will create and insert/append the elements needed to display a "page" of nine students
 */
 
+let itemsPerPage=9; //defaults display to nine students per page
+
+//showPage function creates elements of one students and inserts itemsPerPage students onto a page
 function showPage (list, page) {
   const startIndex = (page*itemsPerPage)-itemsPerPage;
-  const endIndex = (page*itemsPerPage);
+  let endIndex = (page*itemsPerPage);
+  //elimnates errors that from the list of items being not evenly divisible by the itemsPerPage variable.
+  if (list.length<endIndex) {
+    endIndex=list.length;
+  }
+  //concatinates student data items into an html string & inserts string
   const studentList = document.querySelector('.student-list');
   studentList.innerHTML='';
   for (let i=0; i<=list.length; i++) {
     if (i>= startIndex && i<endIndex) {
-      if (list[i].name.title === "Miss") {
-        title = `${list[i].name.title}`;
-      } if (list[i].name.title === "Mr" || list[i].name.title === "Mrs") {
-        title = `${list[i].name.title}.`;
+      //adds . after Mr or Mrs but not Miss
+      let title ='';
+      if (list[i].name.title) {
+        if (list[i].name.title === "Miss") {
+          title = `${list[i].name.title}`;
+        } if (list[i].name.title === "Mr" || list[i].name.title === "Mrs") {
+          title = `${list[i].name.title}.`;
+        }
       } else {
         title = '';
       }
-      html = `
+      //ternary operator in template literal below from https://wesbos.com/template-strings-html/
+      const studentHTML = `
         <li class="student-item cf">
           <div class="student-details">
             <img class="avatar" src="${list[i].picture.large ? `${list[i].picture.large}` : ''}" alt="Profile Picture">
@@ -40,43 +41,67 @@ function showPage (list, page) {
             <span class="date">Joined ${list[i].registered.date ? `${list[i].registered.date}` : ''}</span>
           </div>
         </li>`;
-    studentList.insertAdjacentHTML('beforeend',html);
+    studentList.insertAdjacentHTML('beforeend',studentHTML);
   }
 }
 }
 
+/*addPagination adds buttons for each page. the number of buttons is calculated by dividing the number of students by
+the number of students per page.*/
+function addPagination (list) {
+  const linkList = document.querySelector('.link-list');
+  const  pagination = document.querySelector('.pagination');
+  const numberOfPaginationButtons = (list.length/itemsPerPage);
+  linkList.innerHTML ='';
+  for (let i=0; i<=numberOfPaginationButtons; i++) {
+    let paginationButton = `
+      <li>
+        <button type="button">${i+1}</button>
+      </li>`;
+      linkList.insertAdjacentHTML('beforeend',paginationButton);
+  }
+  //applies active formating to first page button
+  const firstPaginationButton = document.querySelector('.link-list button:first-child');
+  firstPaginationButton.className = 'active';
+
+  const addItemsPerPageButton = `
+    <ul class="itemsPerPage">
+      <li>
+        <div>
+        <button type="button" class="showmore">Show 18 Students Per Page</button>
+        </div>
+      </li>
+    </ul>`;
+      pagination.insertAdjacentHTML('beforeend',addItemsPerPageButton);
+  //listens for clicks on page buttons and calls the showPage function to display the next page of students
+  pagination.addEventListener ('click', (e) => {
+    const paginationButton = document.querySelectorAll('ul.link-list li button')
+    const activePaginationButtons = document.querySelector('.active');
+    if (e.target = paginationButton) {
+      activePaginationButtons.className = '';
+      e.target.className = 'active';
+      page = e.target.textContent;
+      showPage(list,page);
+      }
+    });
+  pagination.addEventListener ('click', (e) => {
+    const itemsPerPageButton = document.querySelector('.showmore')
+    if (e.target = itemsPerPageButton) {
+      let itemsPerPage = 18;
+      itemsPerPageButton.textContent = 'Show 9 Students Per Page';
+      itemsPerPageButton.className='showfewer'
+      showPage(list,page);
+          }
+        });
+    pagination.addEventListener ('click', (e) => {
+      const itemsPerPageButton = document.querySelector('.showfewer')
+      if (e.target = itemsPerPageButton) {
+        let itemsPerPage = 9;
+        itemsPerPageButton.textContent = 'Show 18 Students Per Page';
+        showPage(list,page);
+            }
+          });
+}
+
 showPage(data,1);
-
-
-/*
-Create the `addPagination` function
-This function will create and insert/append the elements needed for the pagination buttons
-*/
-// function addPagination (list) {
-//   const numberOfPaginationButtons = (list.length/9);
-//   const linkList = document.querySelector(ul.link-list);
-//   innerHTML to set linkList ='';
-//   for (i<=numberOfPaginationButtons) {
-//     paginationButton = create DOMelements to display pagination buttons:
-//       <li>
-//         <button type="button">1</button>
-//       </li>
-//       linkList. insertAdjacentHTML + beforeend (paginationButton);
-//   }
-//   const firstPaginationButton =
-//   firstPaginationButton.className = 'active';
-//
-//   eventListener ('click', linkList) {
-//     if event.target = paginationButton {
-//       for (paginationButton.length) {
-//       paginationButton.className = '';
-//       }
-//       event.target.className = 'active';
-//       page = textContent of event.target
-//       showPage(list,page)
-//     }
-//   }
-// }
-
-
-// Call functions
+addPagination(data);

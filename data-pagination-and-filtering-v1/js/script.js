@@ -50,6 +50,7 @@ function showPage (list, page) {
 the number of students per page.*/
 function addPagination (list) {
   const linkList = document.querySelector('.link-list');
+  const  pagination = document.querySelector('.pagination');
   const numberOfPaginationButtons = (list.length/itemsPerPage);
   linkList.innerHTML ='';
   for (let i=0; i<=numberOfPaginationButtons; i++) {
@@ -62,21 +63,7 @@ function addPagination (list) {
   //applies active formating to first page button
   const firstPaginationButton = document.querySelector('.link-list button:first-child');
   firstPaginationButton.className = 'active';
-  //listens for clicks on page buttons and calls the showPage function to display the next page of students
-  linkList.addEventListener ('click', (e) => {
-    const paginationButton = document.querySelectorAll('.link-list.children')
-    const activePaginationButtons = document.querySelector('.active');
-    if (e.target = paginationButton) {
-      activePaginationButtons.className = '';
-      e.target.className = 'active';
-      page = e.target.textContent;
-      showPage(list,page);
-      }
-    });
-}
 
-function addItemsPerPageButton () {
-  const  pagination = document.querySelector('.pagination');
   const addItemsPerPageButton = `
     <ul class="itemsPerPage">
       <li>
@@ -86,17 +73,35 @@ function addItemsPerPageButton () {
       </li>
     </ul>`;
       pagination.insertAdjacentHTML('beforeend',addItemsPerPageButton);
-
+  //listens for clicks on page buttons and calls the showPage function to display the next page of students
+  pagination.addEventListener ('click', (e) => {
+    const paginationButton = document.querySelectorAll('ul.link-list li button')
+    const activePaginationButtons = document.querySelector('.active');
+    if (e.target = paginationButton) {
+      activePaginationButtons.className = '';
+      e.target.className = 'active';
+      page = e.target.textContent;
+      showPage(list,page);
+      }
+    });
   pagination.addEventListener ('click', (e) => {
     const itemsPerPageButton = document.querySelector('.showmore')
     if (e.target = itemsPerPageButton) {
       let itemsPerPage = 18;
       itemsPerPageButton.textContent = 'Show 9 Students Per Page';
-      showPage(data,1);
+      itemsPerPageButton.className='showfewer'
+      showPage(list,page);
           }
         });
+    pagination.addEventListener ('click', (e) => {
+      const itemsPerPageButton = document.querySelector('.showfewer')
+      if (e.target = itemsPerPageButton) {
+        let itemsPerPage = 9;
+        itemsPerPageButton.textContent = 'Show 18 Students Per Page';
+        showPage(list,page);
+            }
+          });
 }
 
 showPage(data,1);
 addPagination(data);
-addItemsPerPageButton();

@@ -8,14 +8,11 @@ const pagination = document.querySelector('.pagination');
 const header = document. querySelector('.header');
 const studentList = document.querySelector('.student-list');
 let activeButtons;
-
+let list=data;
 
 //showPage function creates elements of one students and inserts itemsPerPage students onto a page
 function showPage (list, page) {
-  if ((page*itemsPerPage)>list.length) {
-    page=(list.length/itemsPerPage);
-  }
-  const startIndex = (page*itemsPerPage)-itemsPerPage;
+  let startIndex = (page*itemsPerPage)-itemsPerPage;
   let endIndex = (page*itemsPerPage);
   //elimnates errors that from the list of items being not evenly divisible by the itemsPerPage variable.
   if (list.length<endIndex) {
@@ -53,19 +50,6 @@ function showPage (list, page) {
 }
 }
 
-/* adds button to display more students on the page*/
-function addItemsPerPageButton(list) {
-  const addItemsPerPageButton = `
-    <ul class="itemsPerPage">
-    <li>
-      <div>
-      <button type="button" class="showmore">Show 18 Students Per Page</button>
-      </div>
-    </li>
-    </ul>`;
-  pagination.insertAdjacentHTML('beforeend',addItemsPerPageButton);
-}
-
 /*addPagination adds buttons for each page. the number of buttons is calculated
 by dividing the number of students by the number of students per page.*/
 function addPagination (list) {
@@ -82,6 +66,29 @@ function addPagination (list) {
   //applies active formating to first page button
   const firstPaginationButton = document.querySelector('.link-list button:first-child');
   firstPaginationButton.className = 'active';
+  /*listens for clicks on page buttons and show quantity buttons, calls functions to reapply
+  page number buttons as the number of displayed students changes.
+  calls the showPage function to display the next page of students*/
+  linkList.addEventListener ('click', (e) => {
+    if (e.target.tagName ==='BUTTON') {
+    const button = e.target;
+    activeButtons = document.querySelector('.active');
+    const action = button.className;
+    const nameActions = {
+      inactive: () => {
+          activeButtons.className='inactive';
+          button.className='active';
+          page = button.textContent;
+          showPage(list,page);
+      },
+      active: () => {
+        page = button.textContent;
+        showPage(list,page);
+      }
+    };
+    nameActions[action]();
+  }
+  });
 }
 
 //adds search bar
@@ -92,6 +99,26 @@ function addSearchBar (list) {
       <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
     </label>`;
   header.insertAdjacentHTML('beforeend',searchBar);
+  /*listens to search bar entries, returns filtered array of students or appends "no results"*/
+  header.addEventListener ('input', (e) => {
+    const input = document.querySelector('#search');
+    const searchText = input.value.toLowerCase();
+    list = searchResults(data,searchText);
+    if (list.length>0) {
+      activeButtons = document.querySelector('.active');
+      page = activeButtons.textContent;
+      addPagination(list);
+      showPage(list,page);
+    } else {
+      studentList.innerHTML='';
+      const noResults = `
+        <h2 class = 'no-results'>
+            Sorry, your search had no results.
+        </h2>`;
+      studentList.insertAdjacentHTML('beforeend',noResults);
+    }
+  });
+    return list;
 }
 
 /*compares search text input to data array and returns matching items used
@@ -111,76 +138,7 @@ function searchResults (list,searchText) {
   return filteredList
 };
 
-/*listens for clicks on page buttons and show quantity buttons, calls functions to reapply
-page number buttons as the number of displayed students changes.
-calls the showPage function to display the next page of students*/
-pagination.addEventListener ('click', (e) => {
-  if (e.target.tagName ==='BUTTON') {
-  const button = e.target;
-  activeButtons = document.querySelector('.active');
-  let list=data;
-  const action = button.className;
-  const nameActions = {
-    showmore: () => {
-      itemsPerPage = 18;
-      button.textContent = 'Show 9 Students Per Page';
-      button.className='showfewer';
-      page = activeButtons.textContent;
-      addPagination(list);
-      showPage(list,page);
-    },
-    showfewer: () => {
-        itemsPerPage = 9;
-        button.textContent = 'Show 18 Students Per Page';
-        button.className='showmore';
-        page = activeButtons.textContent;
-        addPagination(list);
-        showPage(list,page);
-    },
-    inactive: () => {
-        activeButtons.className='inactive';
-        button.className='active';
-        page = button.textContent;
-        showPage(list,page);
-    },
-    active: () => {
-      page = button.textContent;
-      showPage(list,page);
-    }
-  };
-  nameActions[action]();
-}
-});
-
-/*listens to search bar entries, returns filtered array of students or appends "no results"*/
-header.addEventListener ('input', (e) => {
-  const input = document.querySelector('#search');
-  const searchText = input.value.toLowerCase();
-  let list = searchResults(data,searchText);
-  if (list.length>0) {
-    activeButtons = document.querySelector('.active');
-    page = activeButtons.textContent;
-    addPagination(list);
-    showPage(list,page);
-    let itemsPerPageButton = document.querySelector('.itemsPerPage');
-    if (list.length<=18 && itemsPerPageButton) {
-      pagination.removeChild(itemsPerPageButton);
-    }
-    if (list.length>=18 && !itemsPerPageButton) {
-      addItemsPerPageButton(list)
-    }
-  } else {
-    studentList.innerHTML='';
-    const noResults = `
-      <h2 class = 'no-results'>
-          Sorry, your search had no results.
-      </h2>`;
-    studentList.insertAdjacentHTML('beforeend',noResults);
-  }
-});
-
 //calls functions
 addPagination(data);
-addItemsPerPageButton(data);
 addSearchBar(data);
 showPage(data,1);

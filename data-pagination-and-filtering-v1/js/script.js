@@ -5,7 +5,10 @@ FSJS Project 2 - Data Pagination and Filtering
 
 let itemsPerPage=9; //defaults display to nine students per page
 const pagination = document.querySelector('.pagination');
+const header = document. querySelector('.header');
 const studentList = document.querySelector('.student-list');
+let activeButtons;
+
 
 //showPage function creates elements of one students and inserts itemsPerPage students onto a page
 function showPage (list, page) {
@@ -33,7 +36,7 @@ function showPage (list, page) {
       } else {
         title = '';
       }
-      //ternary operator in template literal below from https://wesbos.com/template-strings-html/
+      //learned about ternary operator in template literal below from https://wesbos.com/template-strings-html/
       const studentHTML = `
         <li class="student-item cf">
           <div class="student-details">
@@ -50,7 +53,8 @@ function showPage (list, page) {
 }
 }
 
-function addItemsPerPageButton() {
+/* adds button to display more students on the page*/
+function addItemsPerPageButton(list) {
   const addItemsPerPageButton = `
     <ul class="itemsPerPage">
     <li>
@@ -61,11 +65,11 @@ function addItemsPerPageButton() {
     </ul>`;
   pagination.insertAdjacentHTML('beforeend',addItemsPerPageButton);
 }
-/*addPagination adds buttons for each page. the number of buttons is calculated by dividing the number of students by
-the number of students per page.*/
+
+/*addPagination adds buttons for each page. the number of buttons is calculated
+by dividing the number of students by the number of students per page.*/
 function addPagination (list) {
   const numberOfPaginationButtons = (list.length/itemsPerPage);
-
   const linkList = document.querySelector('.link-list');
   linkList.innerHTML ='';
   for (let i=0; i<=numberOfPaginationButtons; i++) {
@@ -80,12 +84,41 @@ function addPagination (list) {
   firstPaginationButton.className = 'active';
 }
 
-  //listens for clicks on page buttons and calls the showPage function to display the next page of students
+//adds search bar
+function addSearchBar (list) {
+  const searchBar = `
+    <label for="search" class="student-search">
+      <input id="search" placeholder="Search by name...">
+      <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
+    </label>`;
+  header.insertAdjacentHTML('beforeend',searchBar);
+}
+
+/*compares search text input to data array and returns matching items used
+https://www.codebrainer.com/blog/how-to-create-javascript-list-filter-and-search-for-records as reference */
+function searchResults (list,searchText) {
+  if (typeof searchText !=='string' || searchText.length === 0) {
+    return list;
+  }
+  const filteredList = list.filter(el => {
+    if (el.name.first.toLowerCase().includes(searchText)) {
+      return true;
+    }
+    if (el.name.last.toLowerCase().includes(searchText)) {
+      return true;
+    }
+  });
+  return filteredList
+};
+
+/*listens for clicks on page buttons and show quantity buttons, calls functions to reapply
+page number buttons as the number of displayed students changes.
+calls the showPage function to display the next page of students*/
 pagination.addEventListener ('click', (e) => {
   if (e.target.tagName ==='BUTTON') {
   const button = e.target;
-  const activeButtons = document.querySelector('.active');
-  const list=data;
+  activeButtons = document.querySelector('.active');
+  let list=data;
   const action = button.className;
   const nameActions = {
     showmore: () => {
@@ -119,6 +152,35 @@ pagination.addEventListener ('click', (e) => {
 }
 });
 
+/*listens to search bar entries, returns filtered array of students or appends "no results"*/
+header.addEventListener ('input', (e) => {
+  const input = document.querySelector('#search');
+  const searchText = input.value.toLowerCase();
+  let list = searchResults(data,searchText);
+  if (list.length>0) {
+    activeButtons = document.querySelector('.active');
+    page = activeButtons.textContent;
+    addPagination(list);
+    showPage(list,page);
+    let itemsPerPageButton = document.querySelector('.itemsPerPage');
+    if (list.length<=18 && itemsPerPageButton) {
+      pagination.removeChild(itemsPerPageButton);
+    }
+    if (list.length>=18 && !itemsPerPageButton) {
+      addItemsPerPageButton(list)
+    }
+  } else {
+    studentList.innerHTML='';
+    const noResults = `
+      <h2 class = 'no-results'>
+          Sorry, your search had no results.
+      </h2>`;
+    studentList.insertAdjacentHTML('beforeend',noResults);
+  }
+});
+
+//calls functions
 addPagination(data);
-addItemsPerPageButton();
+addItemsPerPageButton(data);
+addSearchBar(data);
 showPage(data,1);
